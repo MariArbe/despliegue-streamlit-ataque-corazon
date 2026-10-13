@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pickle
+from urllib.parse import quote
 
 import altair as alt
 import numpy as np
@@ -27,6 +28,85 @@ h1, h2, h3, .big-number, .hero-title { font-family: 'Bricolage Grotesque', sans-
 @media (max-width: 640px) { .hero-title { font-size: 2.4rem; } .big-number { font-size: 3.2rem; } }
 </style>
 """,
+    unsafe_allow_html=True,
+)
+
+# ---------------------------------------------------------------------------
+# Fondo de corazones y tarjetas
+# ---------------------------------------------------------------------------
+HEART_D = "M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.7 5 6 5c2 0 3.4 1.1 4 2.3h4C14.6 6.1 16 5 18 5c3.3 0 5.1 3.4 3.6 6.8C19.5 16.4 12 21 12 21z"
+
+
+def _uri(svg: str) -> str:
+    return 'url("data:image/svg+xml,' + quote(svg) + '")'
+
+
+def heart_uri(color: str, opacity: float) -> str:
+    return _uri(
+        f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>"
+        f"<path fill='{color}' fill-opacity='{opacity}' d='{HEART_D}'/></svg>"
+    )
+
+
+def heart_tile() -> str:
+    """Un mosaico de 340px con corazones de distintos tamaños, giros y colores."""
+    hs = [
+        (30, 40, 2.4, -18, "#E63462", 0.10),
+        (200, 25, 1.4, 14, "#1B998B", 0.12),
+        (270, 150, 2.0, -8, "#E63462", 0.07),
+        (110, 130, 1.1, 22, "#F2A541", 0.16),
+        (40, 230, 1.7, 10, "#1B998B", 0.09),
+        (190, 255, 2.6, -20, "#E63462", 0.08),
+        (300, 300, 1.0, 0, "#E63462", 0.14),
+    ]
+    g = "".join(
+        f"<g transform='translate({x} {y}) rotate({r}) scale({sc})'>"
+        f"<path fill='{c}' fill-opacity='{o}' d='{HEART_D}'/></g>"
+        for x, y, sc, r, c, o in hs
+    )
+    return _uri(f"<svg xmlns='http://www.w3.org/2000/svg' width='340' height='340' viewBox='0 0 340 340'>{g}</svg>")
+
+
+st.markdown(
+    """
+<style>
+.stApp {
+  background-color: #EAF2F0;
+  background-image: TILE,
+    radial-gradient(circle at 12% 8%, rgba(230,52,98,.13), transparent 38%),
+    radial-gradient(circle at 92% 90%, rgba(61,219,194,.22), transparent 42%);
+  background-size: 340px 340px, auto, auto;
+  background-attachment: fixed;
+}
+[data-testid="stHeader"] { background: transparent; }
+[data-testid="stSidebar"] { background: rgba(216,231,227,.72); backdrop-filter: blur(10px); }
+.block-container { position: relative; z-index: 1; }
+.hero-title {
+  font-size: 4rem;
+  background: linear-gradient(90deg, #0F2A33 10%, #E63462 90%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  display: inline-block;
+}
+.verdict {
+  background: rgba(255,255,255,.72); backdrop-filter: blur(6px);
+  border-radius: 22px; padding: 1rem 1.6rem;
+  box-shadow: 0 10px 30px rgba(15,42,51,.08);
+}
+[data-baseweb="tab-panel"] {
+  background: rgba(255,255,255,.62); border-radius: 18px; padding: 1.1rem 1.3rem !important;
+  box-shadow: 0 8px 24px rgba(15,42,51,.06);
+}
+.bg-heart {
+  position: fixed; right: -8vmin; bottom: -10vmin; width: 62vmin; height: 62vmin;
+  background-repeat: no-repeat; background-size: contain; background-position: center;
+  pointer-events: none; z-index: -1; transform-origin: center;
+  animation: bgbeat 1s ease-in-out infinite;
+}
+@keyframes bgbeat { 0%,100% { transform: scale(1); } 15% { transform: scale(1.07); } 30% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .bg-heart { animation: none; } }
+@media (max-width: 640px) { .hero-title { font-size: 2.8rem; } .bg-heart { opacity: .7; } }
+</style>
+""".replace("TILE", heart_tile()),
     unsafe_allow_html=True,
 )
 
@@ -141,6 +221,14 @@ else:
     color, mood = "#FF4D6D", "Pulso agitado"
 
 
+# Corazón gigante de fondo: late al ritmo del índice y toma su color
+_beat = 60 / (62 + 78 * p)
+st.markdown(
+    f"<style>.bg-heart {{ background-image: {heart_uri(color, 0.14)}; animation-duration: {_beat:.3f}s; }}</style>"
+    "<div class='bg-heart'></div>",
+    unsafe_allow_html=True,
+)
+
 # ---------------------------------------------------------------------------
 # Electrocardiograma animado
 # ---------------------------------------------------------------------------
@@ -230,36 +318,43 @@ tab1, tab2, tab3 = st.tabs(["¿Qué mueve el resultado?", "Curvas", "Sobre el mo
 
 with tab1:
     st.write(
-        "Para cada variable, cuánto cambia el índice si pasa de su valor más bajo al más alto "
-        "mientras lo demás queda como lo configuraste."
+        "Qué le pasa al índice si cambias **una sola cosa** y dejas el resto igual. "
+        "Edad y glucosa se mueven un paso razonable; las demás se activan o se quitan."
     )
-    extremos = {
-        "Edad": ("age", 18, 82),
-        "Glucosa": ("glucosa", 55, 272),
-        "Tabaquismo": ("fuma", "Nunca ha fumado", "Fuma actualmente"),
-        "Hipertensión": ("hipertension", False, True),
-        "Enfermedad cardíaca": ("corazon", False, True),
-        "Ha estado casado/a": ("casado", False, True),
-    }
-    filas = []
-    for etiqueta, (k, lo, hi) in extremos.items():
-        a, b = dict(perfil), dict(perfil)
-        a[k], b[k] = lo, hi
-        filas.append({"Variable": etiqueta, "Cambio": (indice(**b) - indice(**a)) * 100})
-    df = pd.DataFrame(filas).sort_values("Cambio", key=abs, ascending=False)
+
+    def efecto(cambio: dict) -> float:
+        return (indice(**{**perfil, **cambio}) - p) * 100
+
+    opciones = [
+        ("Edad +10 años" if age <= 72 else "Edad −10 años", {"age": age + 10 if age <= 72 else age - 10}),
+        ("Glucosa +50 mg/dL" if glucosa <= 222 else "Glucosa −50 mg/dL",
+         {"glucosa": glucosa + 50 if glucosa <= 222 else glucosa - 50}),
+        ("Quitar hipertensión" if hipertension else "Tener hipertensión", {"hipertension": not hipertension}),
+        ("Quitar enfermedad cardíaca" if corazon else "Tener enfermedad cardíaca", {"corazon": not corazon}),
+        ("Pasar a no casado/a" if casado else "Pasar a casado/a", {"casado": not casado}),
+        ("Nunca haber fumado" if fuma == "Fuma actualmente" else "Fumar actualmente",
+         {"fuma": "Nunca ha fumado" if fuma == "Fuma actualmente" else "Fuma actualmente"}),
+    ]
+    df = pd.DataFrame([{"Cambio": etq, "Efecto": efecto(c)} for etq, c in opciones])
+    df = df.sort_values("Efecto", key=abs, ascending=False)
     chart = (
         alt.Chart(df)
-        .mark_bar(cornerRadiusEnd=4)
+        .mark_bar(cornerRadiusEnd=5)
         .encode(
-            x=alt.X("Cambio:Q", title="Cambio en el índice (puntos)"),
-            y=alt.Y("Variable:N", sort=None, title=None),
-            color=alt.condition(alt.datum.Cambio > 0, alt.value("#E63462"), alt.value("#1B998B")),
-            tooltip=["Variable", alt.Tooltip("Cambio:Q", format="+.1f")],
+            x=alt.X("Efecto:Q", title="Cambio en el índice (puntos)"),
+            y=alt.Y("Cambio:N", sort=None, title=None),
+            color=alt.condition(alt.datum.Efecto > 0, alt.value("#E63462"), alt.value("#1B998B")),
+            tooltip=["Cambio", alt.Tooltip("Efecto:Q", format="+.1f")],
         )
-        .properties(height=38 * len(df) + 30)
+        .properties(height=44 * len(df) + 30)
         .configure_view(strokeWidth=0)
     )
     st.altair_chart(chart, width="stretch")
+    st.caption(
+        "Rojo sube el índice y verde lo baja. Son relaciones que el modelo aprendió de los datos de clase, "
+        "no causas, y algunas pueden verse contraintuitivas (por ejemplo, el estado civil suele ir de la mano "
+        "de la edad, y el SVM se apoya mucho en las variables de sí/no)."
+    )
 
 with tab2:
     st.write(
