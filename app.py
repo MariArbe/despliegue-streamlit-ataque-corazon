@@ -10,30 +10,9 @@ import streamlit as st
 st.set_page_config(page_title="Latido", page_icon="🫀", layout="wide")
 
 # ---------------------------------------------------------------------------
-# Estilo
+# Estilo: colores forzados para que se vea igual en modo claro u oscuro del navegador
 # ---------------------------------------------------------------------------
-st.markdown(
-    """
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=DM+Sans:wght@400;500&display=swap');
-html, body, [class*="st-"] { font-family: 'DM Sans', sans-serif; }
-h1, h2, h3, .big-number, .hero-title { font-family: 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em; }
-.block-container { padding-top: 2rem; max-width: 1100px; }
-.hero-title { font-size: 3.4rem; font-weight: 800; line-height: 1; margin: 0; }
-.hero-sub { font-size: 1.05rem; opacity: .75; margin: .4rem 0 1.2rem 0; max-width: 58ch; }
-.verdict { display:flex; align-items:baseline; gap:1.2rem; margin: 1.2rem 0 .4rem 0; flex-wrap:wrap; }
-.big-number { font-size: 4.4rem; font-weight: 800; line-height: 1; }
-.verdict-text { font-size: 1.15rem; max-width: 42ch; }
-.footnote { font-size:.82rem; opacity:.65; margin-top:2rem; }
-@media (max-width: 640px) { .hero-title { font-size: 2.4rem; } .big-number { font-size: 3.2rem; } }
-</style>
-""",
-    unsafe_allow_html=True,
-)
-
-# ---------------------------------------------------------------------------
-# Fondo de corazones y tarjetas
-# ---------------------------------------------------------------------------
+INK = "#0F2A33"
 HEART_D = "M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.7 5 6 5c2 0 3.4 1.1 4 2.3h4C14.6 6.1 16 5 18 5c3.3 0 5.1 3.4 3.6 6.8C19.5 16.4 12 21 12 21z"
 
 
@@ -49,66 +28,141 @@ def heart_uri(color: str, opacity: float) -> str:
 
 
 def heart_tile() -> str:
-    """Un mosaico de 340px con corazones de distintos tamaños, giros y colores."""
+    """Mosaico de 360px con corazones de distintos tamaños, giros y colores."""
     hs = [
-        (30, 40, 2.4, -18, "#E63462", 0.10),
-        (200, 25, 1.4, 14, "#1B998B", 0.12),
-        (270, 150, 2.0, -8, "#E63462", 0.07),
-        (110, 130, 1.1, 22, "#F2A541", 0.16),
-        (40, 230, 1.7, 10, "#1B998B", 0.09),
-        (190, 255, 2.6, -20, "#E63462", 0.08),
-        (300, 300, 1.0, 0, "#E63462", 0.14),
+        (36, 46, 1.7, -16, "#E63462", 0.20),
+        (214, 30, 1.1, 14, "#1B998B", 0.22),
+        (290, 160, 1.5, -8, "#E63462", 0.14),
+        (120, 140, 0.9, 22, "#F2A541", 0.30),
+        (46, 246, 1.3, 10, "#1B998B", 0.18),
+        (200, 262, 1.9, -18, "#E63462", 0.16),
+        (318, 318, 0.8, 0, "#E63462", 0.24),
+        (150, 50, 0.7, -6, "#E63462", 0.22),
     ]
     g = "".join(
         f"<g transform='translate({x} {y}) rotate({r}) scale({sc})'>"
         f"<path fill='{c}' fill-opacity='{o}' d='{HEART_D}'/></g>"
         for x, y, sc, r, c, o in hs
     )
-    return _uri(f"<svg xmlns='http://www.w3.org/2000/svg' width='340' height='340' viewBox='0 0 340 340'>{g}</svg>")
+    return _uri(f"<svg xmlns='http://www.w3.org/2000/svg' width='360' height='360' viewBox='0 0 360 360'>{g}</svg>")
 
 
-st.markdown(
-    """
+CSS = """
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=DM+Sans:wght@400;500;700&display=swap');
+:root, .stApp { color-scheme: light; }
+html, body { font-family: 'DM Sans', sans-serif; }
 .stApp {
-  background-color: #EAF2F0;
+  background-color: #F6F3F4;
   background-image: TILE,
-    radial-gradient(circle at 12% 8%, rgba(230,52,98,.13), transparent 38%),
-    radial-gradient(circle at 92% 90%, rgba(61,219,194,.22), transparent 42%);
-  background-size: 340px 340px, auto, auto;
+    radial-gradient(circle at 8% 4%, rgba(255,140,170,.38), transparent 42%),
+    radial-gradient(circle at 96% 96%, rgba(95,225,200,.42), transparent 46%),
+    linear-gradient(135deg, #FFF3F6 0%, #F0F7F4 50%, #E2F4EE 100%);
+  background-size: 360px 360px, auto, auto, auto;
   background-attachment: fixed;
 }
-[data-testid="stHeader"] { background: transparent; }
-[data-testid="stSidebar"] { background: rgba(216,231,227,.72); backdrop-filter: blur(10px); }
-.block-container { position: relative; z-index: 1; }
-.hero-title {
-  font-size: 4rem;
-  background: linear-gradient(90deg, #0F2A33 10%, #E63462 90%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  display: inline-block;
+/* texto siempre oscuro, aunque el navegador esté en modo oscuro */
+.stApp, .stApp p, .stApp span, .stApp label, .stApp li, .stApp div,
+.stApp h1, .stApp h2, .stApp h3, .stApp small { color: #0F2A33 !important; }
+[data-testid="stHeader"] { background: transparent !important; }
+.block-container { position: relative; z-index: 1; padding-top: 2.2rem; max-width: 1120px; }
+
+/* encabezado */
+.stApp .hero-row { display: flex; align-items: center; margin: 0; }
+.stApp .hero-title {
+  font-family: 'Bricolage Grotesque', sans-serif; font-size: 4.4rem; font-weight: 800;
+  line-height: 1.05; letter-spacing: -.03em; display: inline-block;
+  background: linear-gradient(90deg, #0F2A33 0%, #E63462 100%);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent !important; -webkit-text-fill-color: transparent;
 }
-.verdict {
-  background: rgba(255,255,255,.72); backdrop-filter: blur(6px);
-  border-radius: 22px; padding: 1rem 1.6rem;
-  box-shadow: 0 10px 30px rgba(15,42,51,.08);
+.title-heart {
+  display: inline-block; width: 3.3rem; height: 3.3rem; margin-left: .5rem;
+  background-repeat: no-repeat; background-size: contain; background-position: center;
+  transform-origin: center; animation: bgbeat 1s ease-in-out infinite;
 }
-[data-baseweb="tab-panel"] {
-  background: rgba(255,255,255,.62); border-radius: 18px; padding: 1.1rem 1.3rem !important;
-  box-shadow: 0 8px 24px rgba(15,42,51,.06);
+.stApp .hero-sub { font-size: 1.08rem; opacity: .8; margin: .2rem 0 1.4rem 0; max-width: 60ch; line-height: 1.5; }
+
+/* tarjeta del resultado */
+.stApp .verdict {
+  display: grid; grid-template-columns: auto 1fr; gap: 2.2rem; align-items: center;
+  background: rgba(255,255,255,.84); backdrop-filter: blur(8px);
+  border-radius: 26px; padding: 1.6rem 2.2rem; margin: 1.5rem 0 1.3rem 0;
+  box-shadow: 0 14px 40px rgba(15,42,51,.10), inset 0 0 0 1px rgba(255,255,255,.8);
 }
+.stApp .big-number {
+  font-family: 'Bricolage Grotesque', sans-serif; font-size: 6rem; font-weight: 800;
+  line-height: .9; letter-spacing: -.04em; color: var(--c) !important;
+}
+.stApp .outof { font-size: 1.4rem; opacity: .5; font-weight: 500; margin-left: .2rem; }
+.stApp .score-label { font-size: .85rem; opacity: .65; text-transform: uppercase; letter-spacing: .08em; margin-top: .4rem; }
+.stApp .pill {
+  display: inline-block; padding: .28rem .9rem; border-radius: 999px; font-weight: 700;
+  font-size: .88rem; background: var(--c); color: #fff !important;
+}
+.stApp .verdict-text { font-size: 1.08rem; margin: .6rem 0 1.2rem 0; line-height: 1.45; }
+.meter { position: relative; height: 12px; border-radius: 999px;
+  background: linear-gradient(90deg, #3DDBC2 0%, #F2A541 50%, #FF4D6D 100%); }
+.meter .tick { position: absolute; left: 50%; top: -5px; bottom: -5px; width: 2px; background: #0F2A33; opacity: .45; }
+.meter .dot { position: absolute; top: 50%; width: 26px; height: 26px; margin: -13px 0 0 -13px;
+  border-radius: 50%; background: #fff; border: 5px solid var(--c); box-shadow: 0 3px 10px rgba(15,42,51,.3); }
+.stApp .legend { display: flex; justify-content: space-between; font-size: .8rem; opacity: .65; margin-top: .55rem; }
+
+/* pestañas */
+.stApp [data-baseweb="tab-list"] { gap: .4rem; }
+.stApp [data-baseweb="tab"][aria-selected="true"] p,
+.stApp [data-baseweb="tab"][aria-selected="true"] span { color: #E63462 !important; font-weight: 700; }
+.stApp [data-baseweb="tab-highlight"] { background-color: #E63462 !important; }
+.stApp [data-baseweb="tab-panel"] {
+  background: rgba(255,255,255,.72); border-radius: 20px; padding: 1.2rem 1.4rem !important;
+  margin-top: .6rem; box-shadow: 0 10px 30px rgba(15,42,51,.07);
+}
+
+/* barra lateral y controles */
+section[data-testid="stSidebar"] {
+  background: rgba(255,255,255,.62) !important; backdrop-filter: blur(14px);
+  border-right: 1px solid rgba(15,42,51,.06);
+}
+section[data-testid="stSidebar"] > div { background: transparent !important; }
+.stApp .side-title { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.8rem; font-weight: 800; margin: .2rem 0 .1rem 0; }
+.stApp .side-sub { font-size: .9rem; opacity: .7; margin-bottom: 1.1rem; }
+.stApp [data-baseweb="select"] > div {
+  background: #fff !important; border: 1px solid rgba(15,42,51,.18) !important; border-radius: 12px !important;
+}
+[data-baseweb="popover"] ul, [data-baseweb="popover"] [role="listbox"] { background: #fff !important; }
+[data-baseweb="popover"] li, [data-baseweb="popover"] li * { color: #0F2A33 !important; }
+[data-baseweb="popover"] li:hover { background: #E8F4F1 !important; }
+
+/* electrocardiograma y corazón de fondo */
+.stApp iframe { border-radius: 20px; filter: drop-shadow(0 14px 26px rgba(15,42,51,.28)); }
 .bg-heart {
   position: fixed; right: -8vmin; bottom: -10vmin; width: 62vmin; height: 62vmin;
   background-repeat: no-repeat; background-size: contain; background-position: center;
   pointer-events: none; z-index: -1; transform-origin: center;
   animation: bgbeat 1s ease-in-out infinite;
 }
-@keyframes bgbeat { 0%,100% { transform: scale(1); } 15% { transform: scale(1.07); } 30% { transform: scale(1); } }
-@media (prefers-reduced-motion: reduce) { .bg-heart { animation: none; } }
-@media (max-width: 640px) { .hero-title { font-size: 2.8rem; } .bg-heart { opacity: .7; } }
+@keyframes bgbeat { 0%,100% { transform: scale(1); } 15% { transform: scale(1.08); } 30% { transform: scale(1); } }
+.stApp .footnote { font-size: .82rem; opacity: .65; margin-top: 2rem; }
+@media (prefers-reduced-motion: reduce) { .bg-heart, .title-heart { animation: none; } }
+@media (max-width: 760px) {
+  .stApp .hero-title { font-size: 3rem; } .title-heart { width: 2.4rem; height: 2.4rem; }
+  .stApp .verdict { grid-template-columns: 1fr; gap: 1rem; padding: 1.2rem 1.3rem; }
+  .stApp .big-number { font-size: 4.6rem; }
+}
 </style>
-""".replace("TILE", heart_tile()),
-    unsafe_allow_html=True,
-)
+""".replace("TILE", heart_tile())
+st.markdown(CSS, unsafe_allow_html=True)
+
+
+def estilo(ch):
+    """Gráficos con colores claros fijos (sin el tema oscuro de Streamlit)."""
+    return (
+        ch.configure(background="transparent")
+        .configure_view(strokeWidth=0)
+        .configure_axis(labelColor=INK, titleColor=INK, gridColor="#D3E2DD",
+                        domainColor="#9DB7B0", tickColor="#9DB7B0", labelFontSize=12, titleFontSize=12)
+    )
+
 
 # ---------------------------------------------------------------------------
 # Modelo
@@ -199,7 +253,8 @@ def indice(**kw) -> float:
 # Entradas
 # ---------------------------------------------------------------------------
 with st.sidebar:
-    st.markdown("### Tu perfil")
+    st.markdown('<div class="side-title">Tu perfil</div>'
+                '<div class="side-sub">Mueve los controles y mira cómo late.</div>', unsafe_allow_html=True)
     age = st.slider("Edad", 18, 82, 45)
     glucosa = st.slider("Glucosa promedio (mg/dL)", 55, 272, 100)
     fuma = st.selectbox("Tabaquismo", list(FUMA.keys()))
@@ -221,10 +276,11 @@ else:
     color, mood = "#FF4D6D", "Pulso agitado"
 
 
-# Corazón gigante de fondo: late al ritmo del índice y toma su color
+# Corazón gigante de fondo y corazón del título: laten al ritmo del índice y toman su color
 _beat = 60 / (62 + 78 * p)
 st.markdown(
-    f"<style>.bg-heart {{ background-image: {heart_uri(color, 0.14)}; animation-duration: {_beat:.3f}s; }}</style>"
+    f"<style>.bg-heart {{ background-image: {heart_uri(color, 0.20)}; animation-duration: {_beat:.3f}s; }}"
+    f".title-heart {{ background-image: {heart_uri(color, 1)}; animation-duration: {_beat:.3f}s; }}</style>"
     "<div class='bg-heart'></div>",
     unsafe_allow_html=True,
 )
@@ -290,10 +346,10 @@ def ecg_html(p: float, color: str, mood: str) -> str:
 """
 
 
-st.markdown('<p class="hero-title">Latido</p>', unsafe_allow_html=True)
 st.markdown(
-    '<p class="hero-sub">Mueve los controles de la izquierda y mira cómo cambia el pulso. '
-    "Un modelo SVM entrenado en clase estima si el perfil se parece al de personas que sufrieron un ataque al corazón.</p>",
+    '<div class="hero-row"><span class="hero-title">Latido</span><span class="title-heart"></span></div>'
+    '<div class="hero-sub">Mueve los controles de la izquierda y mira cómo cambia el pulso. '
+    "Un modelo SVM entrenado en clase estima si el perfil se parece al de personas que sufrieron un ataque al corazón.</div>",
     unsafe_allow_html=True,
 )
 st.iframe(ecg_html(p, color, mood), height=215)
@@ -303,13 +359,18 @@ msg = (
     if alerta
     else "El modelo no clasifica este perfil como de riesgo."
 )
-num_color = "#1B998B" if color == "#3DDBC2" else color
+pill_txt = "Clasificado como riesgo" if alerta else "Sin alerta del modelo"
+num_color = {"#3DDBC2": "#1B998B", "#F2A541": "#D98A1F", "#FF4D6D": "#E63462"}[color]
 st.markdown(
-    f'<div class="verdict"><span class="big-number" style="color:{num_color}">{p*100:.0f}</span>'
-    f'<span class="verdict-text"><b>Índice de riesgo (0 a 100)</b><br>{msg}</span></div>',
+    f"<div class='verdict' style='--c:{num_color}'>"
+    f"<div><div class='score'><span class='big-number'>{p*100:.0f}</span><span class='outof'>/100</span></div>"
+    f"<div class='score-label'>Índice de riesgo</div></div>"
+    f"<div><span class='pill'>{pill_txt}</span><div class='verdict-text'>{msg}</div>"
+    f"<div class='meter'><div class='tick'></div><div class='dot' style='left:{p*100:.1f}%'></div></div>"
+    f"<div class='legend'><span>0</span><span>50 · frontera del modelo</span><span>100</span></div></div>"
+    f"</div>",
     unsafe_allow_html=True,
 )
-st.progress(p, text="A partir de 50 el modelo clasifica como riesgo")
 
 # ---------------------------------------------------------------------------
 # Pestañas
@@ -347,9 +408,8 @@ with tab1:
             tooltip=["Cambio", alt.Tooltip("Efecto:Q", format="+.1f")],
         )
         .properties(height=44 * len(df) + 30)
-        .configure_view(strokeWidth=0)
     )
-    st.altair_chart(chart, width="stretch")
+    st.altair_chart(estilo(chart), width="stretch", theme=None)
     st.caption(
         "Rojo sube el índice y verde lo baja. Son relaciones que el modelo aprendió de los datos de clase, "
         "no causas, y algunas pueden verse contraintuitivas (por ejemplo, el estado civil suele ir de la mano "
@@ -371,7 +431,7 @@ with tab2:
         punto = alt.Chart(pd.DataFrame({titulo: [actual], "Índice": [p * 100]})).mark_point(
             color=num_color, size=160, filled=True
         ).encode(x=f"{titulo}:Q", y="Índice:Q")
-        col.altair_chart((linea + punto).properties(height=240), width="stretch")
+        col.altair_chart(estilo((linea + punto).properties(height=240)), width="stretch", theme=None)
 
     curva(c1, "age", list(range(18, 83, 2)), age, "Edad")
     curva(c2, "glucosa", list(range(55, 273, 5)), glucosa, "Glucosa")
@@ -391,7 +451,7 @@ with tab3:
     )
 
 st.markdown(
-    '<p class="footnote">Proyecto académico. Esta herramienta no es un diagnóstico médico ni '
-    "reemplaza la opinión de un profesional de salud.</p>",
+    '<div class="footnote">Proyecto académico. Esta herramienta no es un diagnóstico médico ni '
+    "reemplaza la opinión de un profesional de salud.</div>",
     unsafe_allow_html=True,
 )
